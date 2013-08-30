@@ -35,7 +35,7 @@ describe VCAP::Services::Api::ServiceGatewayClient do
       EM.should_receive(:reactor_running?).and_return nil
 
       path = "/path1"
-      resp = mock("resq")
+      resp = double("resq")
       message = "data"
       resp.should_receive(:body).and_return(message)
       resp.should_receive(:code).and_return 200
@@ -55,7 +55,7 @@ describe VCAP::Services::Api::ServiceGatewayClient do
       EM.should_receive(:reactor_running?).any_number_of_times.and_return nil
 
       path = "/path1"
-      resp = mock("resq")
+      resp = double("resq")
       resp.should_receive(:body).and_return(
         {:code => 40400, :description=> "not found"}.to_json,
         {:code => 50300, :description=> "internal"}.to_json,

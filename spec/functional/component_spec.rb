@@ -25,77 +25,86 @@ describe VCAP::Component do
     end
   end
 
-  it "should publish an announcement" do
-    em(:timeout => 2) do
-      nats.subscribe("vcap.component.announce") do |msg|
-        body = Yajl::Parser.parse(msg, :symbolize_keys => true)
-        body[:type].should == "type"
-        done
-      end
+  unless VCAP::WINDOWS
+    it "should publish an announcement" do
+      em(:timeout => 2) do
+        nats.subscribe("vcap.component.announce") do |msg|
+          body = Yajl::Parser.parse(msg, :symbolize_keys => true)
+          body[:type].should == "type"
+          done
+        end
 
-      VCAP::Component.register(default_options)
-    end
-  end
-
-  it "should listen for discovery messages" do
-    em do
-      VCAP::Component.register(default_options)
-
-      nats.request("vcap.component.discover") do |msg|
-        body = Yajl::Parser.parse(msg, :symbolize_keys => true)
-        body[:type].should == "type"
-        done
+        VCAP::Component.register(default_options)
       end
     end
   end
 
-  it "should allow you to set an index" do
-    em do
-      options = default_options
-      options[:index] = 5
-
-      VCAP::Component.register(options)
-
-      nats.request("vcap.component.discover") do |msg|
-        body = Yajl::Parser.parse(msg, :symbolize_keys => true)
-        body[:type].should == "type"
-        body[:index].should == 5
-        body[:uuid].should =~ /^5-.*/
-        done
-      end
-    end
-  end
-
-  describe 'process information' do
-    before do
-      VCAP::Component.instance_eval do
-        remove_instance_variable(:@last_varz_update) if instance_variable_defined?(:@last_varz_update)
-      end
-
+  unless VCAP::WINDOWS
+    it "should listen for discovery messages" do
       em do
-        VCAP::Component.register(:nats => nats)
-        done
+        VCAP::Component.register(default_options)
+
+        nats.request("vcap.component.discover") do |msg|
+          body = Yajl::Parser.parse(msg, :symbolize_keys => true)
+          body[:type].should == "type"
+          done
+        end
       end
-    end
-
-    it 'includes memory information' do
-      Vmstat.stub_chain(:memory, :active_bytes).and_return 75
-      Vmstat.stub_chain(:memory, :wired_bytes).and_return 25
-      Vmstat.stub_chain(:memory, :inactive_bytes).and_return 660
-      Vmstat.stub_chain(:memory, :free_bytes).and_return 340
-
-      VCAP::Component.updated_varz[:mem_used_bytes].should == 100
-      VCAP::Component.updated_varz[:mem_free_bytes].should == 1000
-    end
-
-    it 'includes CPU information' do
-      Vmstat.stub_chain(:load_average, :one_minute).and_return 2.0
-
-      VCAP::Component.updated_varz[:cpu_load_avg].should == 2.0
     end
   end
 
-  describe 'suppression of keys in config information in varz' do
+  unless VCAP::WINDOWS
+    it "should allow you to set an index" do
+      em do
+        options = default_options
+        options[:index] = 5
+
+        VCAP::Component.register(options)
+
+        nats.request("vcap.component.discover") do |msg|
+          body = Yajl::Parser.parse(msg, :symbolize_keys => true)
+          body[:type].should == "type"
+          body[:index].should == 5
+          body[:uuid].should =~ /^5-.*/
+          done
+        end
+      end
+    end
+  end
+
+  unless VCAP::WINDOWS
+    describe 'process information' do
+      before do
+        VCAP::Component.instance_eval do
+          remove_instance_variable(:@last_varz_update) if instance_variable_defined?(:@last_varz_update)
+        end
+
+        em do
+          VCAP::Component.register(:nats => nats)
+          done
+        end
+      end
+
+      it 'includes memory information' do
+        Vmstat.stub_chain(:memory, :active_bytes).and_return 75
+        Vmstat.stub_chain(:memory, :wired_bytes).and_return 25
+        Vmstat.stub_chain(:memory, :inactive_bytes).and_return 660
+        Vmstat.stub_chain(:memory, :free_bytes).and_return 340
+
+        VCAP::Component.updated_varz[:mem_used_bytes].should == 100
+        VCAP::Component.updated_varz[:mem_free_bytes].should == 1000
+      end
+
+      it 'includes CPU information' do
+        Vmstat.stub_chain(:load_average, :one_minute).and_return 2.0
+
+        VCAP::Component.updated_varz[:cpu_load_avg].should == 2.0
+      end
+    end
+  end
+
+  unless VCAP::WINDOWS
+    describe 'suppression of keys in config information in varz' do
     it 'should suppress certain keys in the top level config' do
       em do
         options = { :type => 'suppress_test', :nats => nats }
@@ -157,8 +166,10 @@ describe VCAP::Component do
       end
     end
   end
+  end
 
-  describe "http endpoint" do
+  unless VCAP::WINDOWS
+    describe "http endpoint" do
     let(:host) { VCAP::Component.varz[:host] }
     let(:authorization) { { :head => { "authorization" => VCAP::Component.varz[:credentials] } } }
 
@@ -268,6 +279,7 @@ describe VCAP::Component do
         end
       end
     end
+  end
   end
 
   def make_em_httprequest(method, host, path, opts={})

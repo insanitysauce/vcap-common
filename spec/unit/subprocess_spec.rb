@@ -5,6 +5,7 @@ describe VCAP::Subprocess do
     @subprocess = VCAP::Subprocess.new
   end
 
+  unless VCAP::WINDOWS
   describe '#run' do
     it 'should capture both stdout and stderr' do
       stdout, stderr, status = @subprocess.run('echo foo >&2')
@@ -47,5 +48,6 @@ describe VCAP::Subprocess do
       VCAP::Subprocess.run('echo foo')
       handler_called.should be_true
     end
+  end
   end
 end

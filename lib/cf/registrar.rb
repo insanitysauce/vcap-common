@@ -77,11 +77,10 @@ module Cf
     end
 
     private
-
     def handle_router_greeting(message)
       send_registration_message
 
-      if (interval = message[:minimumRegisterIntervalInSeconds])
+     if (interval = message[:minimumRegisterIntervalInSeconds])
         setup_interval(interval)
       end
     end

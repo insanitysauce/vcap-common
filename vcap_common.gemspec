@@ -30,6 +30,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency('sinatra')
   s.add_development_dependency('webmock')
   s.add_development_dependency('debugger')
+  if RUBY_PLATFORM=~ /mswin|mingw|cygwin/
+    s.add_dependency("win32-eventlog")
+  end
 
   s.require_paths = ['lib']
 

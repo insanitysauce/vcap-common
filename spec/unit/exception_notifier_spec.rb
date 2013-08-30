@@ -11,9 +11,9 @@ describe Cf::ExceptionNotifier do
   }
 
   before do
-    Squash::Ruby.stub!(:configure)
-    Squash::Ruby.stub!(:notify)
-    described_class.stub!(:puts)
+    Squash::Ruby.stub(:configure)
+    Squash::Ruby.stub(:notify)
+    described_class.stub(:puts)
     described_class.reset
   end
 
