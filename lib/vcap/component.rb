@@ -94,7 +94,18 @@ module VCAP
 
         if Time.now.to_f - @last_varz_update >= 1
           # Grab current cpu and memory usage
-          rss, pcpu = `ps -o rss=,pcpu= -p #{Process.pid}`.split
+          if WINDOWS
+            # TODO windows
+            # typeperf -sc 1 "\Process(ruby*)\ID Process"
+            # typeperf -sc 1 "\Process(chrome*)\% processor time"
+            # $ ruby -e 'puts %x!tasklist /nh /fo csv /fi \"pid eq #{Process.pid}\"!'
+            # "ruby.exe","10216","Console","1","9,232 K"
+            out_ary = %x[tasklist /nh /fi "pid eq #{Process.pid}"].split
+            @varz[:mem] = out_ary[4].delete(',').to_i
+            @varz[:cpu] = 0.0
+          else
+            rss, pcpu = `ps -o rss=,pcpu= -p #{Process.pid}`.split
+          end
 
           # Update varz
           varz.synchronize do
